@@ -1,5 +1,4 @@
-<?xml version="1.0"?>
-<!--
+<?xml version="1.0"?><!--
   http://skywalkermodel.com/en/76.html
 -->
 <sdf version='1.5'>
@@ -114,7 +113,7 @@
       </axis>
     </joint>
 
-    <link name='rotor_pusher'>
+    <link name='rotor_0'>
       <pose>-0.22 0 0.0 0 1.57 0</pose>
       <inertial>
         <pose>0 0 0 0 0 0</pose>
@@ -128,7 +127,7 @@
           <izz>0.000167604</izz>
         </inertia>
       </inertial>
-      <collision name='rotor_pusher_collision'>
+      <collision name='rotor_0_collision'>
         <pose>0.0 0 -0.04 0 0 0</pose>
         <geometry>
           <cylinder>
@@ -145,7 +144,7 @@
           </friction>
         </surface>
       </collision>
-      <visual name='rotor_pusher_visual'>
+      <visual name='rotor_0_visual'>
         <pose>0 0 -0.04 0 0 0</pose>
         <geometry>
           <mesh>
@@ -162,8 +161,8 @@
       <velocity_decay/>
       <self_collide>0</self_collide>
     </link>
-    <joint name='rotor_pusher_joint' type='revolute'>
-      <child>rotor_pusher</child>
+    <joint name='rotor_0_joint' type='revolute'>
+      <child>rotor_0</child>
       <parent>base_link</parent>
       <axis>
         <xyz>1 0 0</xyz>
@@ -404,12 +403,12 @@
 
     <!-- pusher motor {-->
     <plugin filename="gz-sim-multicopter-motor-model-system" name="gz::sim::systems::MulticopterMotorModel">
-      <jointName>rotor_pusher_joint</jointName>
-      <linkName>rotor_pusher</linkName>
+      <jointName>rotor_0_joint</jointName>
+      <linkName>rotor_0</linkName>
       <turningDirection>cw</turningDirection>
       <timeConstantUp>0.0125</timeConstantUp>
       <timeConstantDown>0.025</timeConstantDown>
-      <maxRotVelocity>3500</maxRotVelocity>
+      <maxRotVelocity>3000</maxRotVelocity>
       <motorConstant>8.54858e-06</motorConstant>
       <momentConstant>0.01</momentConstant>
       <commandSubTopic>command/motor_speed</commandSubTopic>
