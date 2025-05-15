@@ -1,4 +1,4 @@
 [submodule "plugins/px4-gzsim-plugins"]
 	path = plugins/px4-gzsim-plugins
-	url = git@github.com:tiiuae/px4-gzsim-plugins.git
+	url = https://github.com/tiiuae/px4-gzsim-plugins.git
 	branch = master
