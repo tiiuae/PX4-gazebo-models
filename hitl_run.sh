@@ -1,5 +1,9 @@
 #!/bin/bash
 
+GZ_SIM_SYSTEM_PLUGIN_PATH=$(pwd)/build/px4_sitl_default/build_gz-sim_plugins/
+PX4_GZ_MODELS=$(pwd)/Tools/simulation/gz/models
+PX4_GZ_WORLDS=$(pwd)/Tools/simulation/gz/worlds
+
 #example for run
 #./Tools/simulation/gz/hitl_run.sh ssrc_holybro_x500/model_hitl.sdf
 
