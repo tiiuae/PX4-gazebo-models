@@ -91,9 +91,10 @@ docker run --rm --network host -e LIBGL_ALWAYS_SOFTWARE=1 \
 ```
 
 The runtime layout remains `/px4-firmware`, matching absolute paths in `gz_env.sh`.
-The server configuration is copied too. The build checks required artifacts,
-Python dependencies and unresolved library dependencies. Do not mount an older
-host build tree over the image's build directory.
+The server configuration is copied too. The image serves both single-controller
+and FT HITL; select the model or test configuration at runtime. Use the smoke
+checks above to verify startup, plugin loading and resource paths. Do not mount an
+older host build tree over the image's build directory.
 
 On Linux, host networking supplies the controller-facing host IP and UDP ports
 without a container NAT mapping, and supports Gazebo discovery with a separate
