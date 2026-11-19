@@ -1,6 +1,9 @@
 # PX4-gazebo-models
 Models and worlds to be used in local Fuel instances and kept up to date in [app.gazebosim.org/PX4](https://app.gazebosim.org/PX4).
 
+For Saluki single-controller and FT hardware-in-the-loop simulation with Harmonic,
+see the [Saluki FT HITL guide](SALUKI_FT_HITL.md).
+
 ## Starting GZ simulation
 In addition to providing resource files for all models and worlds, this repo also contains a simulation-gazebo script that will start a world and works in conjunction with PX4.
 
