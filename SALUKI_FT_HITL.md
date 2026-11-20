@@ -178,9 +178,6 @@ from GStreamer's `appsrc do-timestamp` for playback.
 - SSH display failures: use `--headless`. For rendering failures, verify GPU/EGL
   availability and actual camera frames; successful spawning does not prove video
   delivery. Software rendering can be selected with `LIBGL_ALWAYS_SOFTWARE=1`.
-- The X500's invisible gimbal-pan visual was removed because its `<empty/>`
-  geometry is unsupported by Ogre2. Existing zero-mass camera-link inertia
-  warnings remain; no masses, joints or flight dynamics were changed.
 
 The earlier host setup on `pmk-server-hitl2` used Ubuntu 24.04, Harmonic 8.15,
 the same Ethernet addresses and hardware airframe 1401. Loopback model startup

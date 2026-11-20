@@ -712,8 +712,12 @@
           <izz>0.000166667</izz>
         </inertia>
       </inertial>
-      <!-- This pan link is a joint frame with no visible geometry. An empty
-           visual is unsupported by Ogre2; omit it rather than invent a shape. -->
+      <visual name="visual">
+        <geometry>
+          <empty/>
+        </geometry>
+        <transparency>1</transparency>
+      </visual>
       <collision name="collision">
         <geometry>
           <empty/>
