@@ -656,7 +656,7 @@
 
     <!-- GIMBAL CAMERA {-->
     <link name="gimbal_camera_link">
-      <pose>0 0 0 0 1.57 0</pose>
+      <pose>0 0 0 0 0 0</pose>
       <inertial>
         <mass>0.01</mass>
         <inertia>
@@ -680,6 +680,7 @@
         </geometry>
       </visual>
       <sensor type="camera" name="onboard-gimbal-camera">
+        <pose>0.2 0 0 0 0 0</pose> <!-- Forward view, clear of the central body. -->
         <camera>
           <horizontal_fov>1.047</horizontal_fov>
           <image>

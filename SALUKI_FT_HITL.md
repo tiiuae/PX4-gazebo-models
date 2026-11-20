@@ -146,6 +146,14 @@ ports 14542/14562 before launching. Model arguments may be absolute paths or
 relative to `PX4_GZ_MODELS`; `PX4_FT_HITL_MODEL` overrides the background launcher's
 model. Neither option changes controller configuration.
 
+## Visual flight references
+
+The default world has ground lines at 10 m spacing, four coloured landmarks,
+and a yellow H in a 4 m outlined pad centred on the simulator spawn `(1.01, 0.98)`.
+These are visual references without additional collisions. The H marks the launch
+location; it does not follow a home position subsequently set by the autopilot.
+The existing ground collision, physics and GPS origin are unchanged.
+
 ## Camera streaming to QGroundControl
 
 Set the QGroundControl computer's address when starting:
@@ -158,7 +166,9 @@ The address is saved in the state directory's `video-host` file. Without a saved
 address, startup uses the SSH client's address, falling back to `127.0.0.1` for a
 local session. Set an explicit reachable address when using an SSH jump host.
 `PX4_VIDEO_CAMERA` defaults to `onboard-gimbal-camera`, selecting the existing
-gimbal view instead of whichever camera topic appears first. In QGroundControl,
+forward-facing gimbal view instead of whichever camera topic appears first.
+The camera sensor sits 0.2 m ahead of the gimbal origin to clear the central body;
+the pan/tilt joints and their controls remain available. In QGroundControl,
 select **UDP h.264 Video Stream**, port **5600**, and allow video while disarmed.
 Allow UDP 5600 on the receiving computer. Stop and restart to apply video settings
 or a rebuilt camera plugin. The camera plugin uses pipeline-relative timestamps
