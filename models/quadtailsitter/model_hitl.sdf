@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<sdf version='1.10'>
+  <model name='quadtailsitter_hitl'>
+    <include merge='true'>
+      <uri>model://quadtailsitter</uri>
+    </include>
+    <plugin filename="libmavlink_hitl_gazebosim.so" name="mavlink_interface::GazeboMavlinkInterface">
+      <robotNamespace/>
+      <imuSubTopic>/link/base_link/sensor/imu_sensor/imu</imuSubTopic>
+      <gpsSubTopic>/link/base_link/sensor/navsat_sensor/navsat</gpsSubTopic>
+      <baroSubTopic>/link/base_link/sensor/air_pressure_sensor/air_pressure</baroSubTopic>
+      <magSubTopic>/link/base_link/sensor/magnetometer_sensor/magnetometer</magSubTopic>
+      <poseSubTopic>/pose/info</poseSubTopic>
+      <mavlink_addr>192.168.202.1</mavlink_addr>
+      <mavlink_udp_local_port>14542</mavlink_udp_local_port>
+      <mavlink_udp_remote_port>14543</mavlink_udp_remote_port>
+      <use_tcp>0</use_tcp>
+    </plugin>
+  </model>
+</sdf>
