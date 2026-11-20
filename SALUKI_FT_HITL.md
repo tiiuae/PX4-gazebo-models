@@ -146,6 +146,31 @@ ports 14542/14562 before launching. Model arguments may be absolute paths or
 relative to `PX4_GZ_MODELS`; `PX4_FT_HITL_MODEL` overrides the background launcher's
 model. Neither option changes controller configuration.
 
+## Single-FC quad tailsitter
+
+Prepare FC1 using [airframe 13200 and the tailsitter overrides](models/quadtailsitter/hitl_params.txt)
+before connecting the simulator to hardware. This is a four-motor tailsitter,
+not the X500 airframe. Stop the current managed instance before changing models:
+
+```bash
+./Tools/simulation/gz/stop_ft_hitl.sh
+PX4_FT_HITL_MODEL=quadtailsitter/model_hitl.sdf \
+  ./Tools/simulation/gz/start_ft_hitl.sh
+```
+
+The existing script names and state directory are shared with FT operation.
+This model uses only FC1 (`192.168.202.1:14543`) and host port 14542, with
+`FT_N_SPARE_FCS=0`. The marked default world and network configuration are reused.
+The model currently has no camera, so it does not produce QGC video. The initial
+parameter profile uses airspeedless, pitch-based transitions; flight validation
+remains separate from simulator startup.
+
+On HITL1, `~/hitl.sh` selects this model. An explicit `PX4_FT_HITL_MODEL` overrides
+that host default, for example `ssrc_holybro_x500/model_hitl.sdf` to return to the
+single-FC X500 after stopping the previous session. Stop with
+`~/saluki-hitl/stop-ft-gazebo.sh`. Neither launcher applies the parameter file or
+arms the controller.
+
 ## Visual flight references
 
 The default world has ground lines at 10 m spacing, four coloured landmarks,
