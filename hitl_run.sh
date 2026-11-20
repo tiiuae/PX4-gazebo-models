@@ -1,47 +1,58 @@
 #!/bin/bash
+set -eo pipefail
 
-GZ_SIM_SYSTEM_PLUGIN_PATH=$(pwd)/build/px4_sitl_default/build_gz-sim_plugins/
-PX4_GZ_MODELS=$(pwd)/Tools/simulation/gz/models
-PX4_GZ_WORLDS=$(pwd)/Tools/simulation/gz/worlds
+# Run from any directory. Full procedure: SALUKI_FT_HITL.md beside this script.
+# ./Tools/simulation/gz/hitl_run.sh ssrc_holybro_x500/model_ft_hitl.sdf --headless
+SCRIPT_DIR=$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd)
+WORKSPACE=$(cd -- "$SCRIPT_DIR/../../.." && pwd)
+BUILD_DIR="$WORKSPACE/build/px4_sitl_default"
+HITL_PLUGIN_DIR="$BUILD_DIR/build_gz-sim_plugins"
+MODEL_PATH=${1:-}
 
-#example for run
-#./Tools/simulation/gz/hitl_run.sh ssrc_holybro_x500/model_hitl.sdf
-
-MODEL_PATH=$1
-
-if [ -z $MODEL_PATH ]; then
-    echo "You should specify a path to the using model"
-    echo "./Tools/simulation/gz/hitl_run.sh ssrc_holybro_x500/model_hitl.sdf"
-    exit
+if [ -z "$MODEL_PATH" ]; then
+    echo "Usage: $0 model/model_hitl.sdf [--headless] [gz sim options]" >&2
+    exit 1
 fi
+shift
+GZ_ARGS=()
+for arg in "$@"; do
+    case "$arg" in
+        --headless) GZ_ARGS+=(-s --headless-rendering) ;;
+        *) GZ_ARGS+=("$arg") ;;
+    esac
+done
 
-if [ ! -f $(pwd)/build/px4_sitl_default/rootfs/gz_env.sh ]; then
-    echo "You should build px4_sitl_default"
-    echo "make px4_sitl_default"
-    exit
+if [ ! -f "$BUILD_DIR/rootfs/gz_env.sh" ]; then
+    echo "Missing $BUILD_DIR/rootfs/gz_env.sh; build with GZ_DISTRO=harmonic make px4_sitl_default gzsim-plugins px4_gz_plugins" >&2
+    exit 1
 fi
+# The generated environment appends standard PX4 plugins and preserves inherited paths.
+# shellcheck disable=SC1091
+source "$BUILD_DIR/rootfs/gz_env.sh"
+export GZ_SIM_SYSTEM_PLUGIN_PATH="${HITL_PLUGIN_DIR}${GZ_SIM_SYSTEM_PLUGIN_PATH:+:${GZ_SIM_SYSTEM_PLUGIN_PATH}}"
 
-source $(pwd)/build/px4_sitl_default/rootfs/gz_env.sh
-
-if [ ! -f $GZ_SIM_SYSTEM_PLUGIN_PATH/libmavlink_hitl_gazebosim.so ]; then
-    echo "You should build gzsim-plugins"
-    echo "make px4_sitl gzsim-plugins"
-    exit
+if [ ! -f "$HITL_PLUGIN_DIR/libmavlink_hitl_gazebosim.so" ]; then
+    echo "Missing HITL bridge in $HITL_PLUGIN_DIR; run GZ_DISTRO=harmonic make px4_sitl_default gzsim-plugins" >&2
+    exit 1
 fi
-
-spawn_model() {
-    sleep 5
-    MODEL=${PX4_SIM_MODELS}/${MODEL_PATH}
-    NAME="HITL_Drone"
-    REQUEST="sdf_filename: \"${MODEL}\", name: \"${NAME}\" pose: {position: {x: 1.01, y: 0.98, z: 0.83}}"
-    gz service -s /world/default/create \
-            --reqtype gz.msgs.EntityFactory \
-            --reptype gz.msgs.Boolean \
-            --timeout 1000 \
-            --req "`echo $REQUEST`"
-}
-
-spawn_model &
-
-WORD_PATH="${PX4_GZ_WORLDS}/default.sdf"
-gz sim ${WORD_PATH} -r
+for plugin in libOpticalFlowSystem.so libGstCameraSystem.so; do
+    if [ ! -f "$PX4_GZ_PLUGINS/$plugin" ]; then
+        echo "Missing $PX4_GZ_PLUGINS/$plugin; run GZ_DISTRO=harmonic make px4_sitl_default px4_gz_plugins" >&2
+        exit 1
+    fi
+done
+if [ ! -f "$GZ_SIM_SERVER_CONFIG_PATH" ]; then
+    echo "Missing server configuration: $GZ_SIM_SERVER_CONFIG_PATH; regenerate the build environment" >&2
+    exit 1
+fi
+case "$MODEL_PATH" in
+    /*) MODEL="$MODEL_PATH" ;;
+    *) MODEL="$PX4_GZ_MODELS/$MODEL_PATH" ;;
+esac
+if [ ! -f "$MODEL" ] || [ ! -f "$PX4_GZ_WORLDS/default.sdf" ]; then
+    echo "Model or default world missing: $MODEL; initialize Tools/simulation/gz submodules" >&2
+    exit 1
+fi
+command -v gz >/dev/null || { echo "Install Gazebo Harmonic (gz-harmonic)" >&2; exit 1; }
+exec python3 "$SCRIPT_DIR/hitl_session.py" --model "$MODEL" \
+    --world "$PX4_GZ_WORLDS/default.sdf" -- "${GZ_ARGS[@]}"
