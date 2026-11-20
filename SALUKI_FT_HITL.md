@@ -166,7 +166,8 @@ The address is saved in the state directory's `video-host` file. Without a saved
 address, startup uses the SSH client's address, falling back to `127.0.0.1` for a
 local session. Set an explicit reachable address when using an SSH jump host.
 `PX4_VIDEO_CAMERA` defaults to `onboard-gimbal-camera`, selecting the existing
-forward-facing gimbal view instead of whichever camera topic appears first.
+gimbal view pitched 45 degrees below horizontal instead of whichever camera
+topic appears first.
 The camera sensor sits 0.2 m ahead of the gimbal origin to clear the central body;
 the pan/tilt joints and their controls remain available. In QGroundControl,
 select **UDP h.264 Video Stream**, port **5600**, and allow video while disarmed.

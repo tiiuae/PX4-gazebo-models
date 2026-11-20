@@ -680,7 +680,7 @@
         </geometry>
       </visual>
       <sensor type="camera" name="onboard-gimbal-camera">
-        <pose>0.2 0 0 0 0 0</pose> <!-- Forward view, clear of the central body. -->
+        <pose>0.2 0 0 0 0.7853981633974483 0</pose> <!-- 45 degrees down, clear of the central body. -->
         <camera>
           <horizontal_fov>1.047</horizontal_fov>
           <image>
