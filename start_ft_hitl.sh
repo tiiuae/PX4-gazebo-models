@@ -8,7 +8,7 @@ if [[ ${1:-} == --help || ${1:-} == -h ]]; then
     echo "PX4_FT_HITL_STATE_DIR overrides the PID/log directory."
     echo "PX4_FT_HITL_MODEL selects model/model_hitl.sdf or an absolute SDF."
     echo "For models with a camera, PX4_VIDEO_HOST_IP is saved between starts and defaults to the SSH client; UDP port is 5600."
-    echo "PX4_VIDEO_CAMERA defaults to onboard-gimbal-camera."
+    echo "PX4_VIDEO_CAMERA defaults to third-person-camera for quadtailsitter, otherwise onboard-gimbal-camera."
     exit 0
 fi
 SCRIPT_DIR=$(dirname -- "$(readlink -f -- "${BASH_SOURCE[0]}")")
@@ -35,7 +35,11 @@ if [[ -z ${PX4_VIDEO_HOST_IP:-} && -n ${SSH_CONNECTION:-} ]]; then
     read -r PX4_VIDEO_HOST_IP _ <<< "$SSH_CONNECTION"
 fi
 export PX4_VIDEO_HOST_IP=${PX4_VIDEO_HOST_IP:-127.0.0.1}
-export PX4_VIDEO_CAMERA=${PX4_VIDEO_CAMERA:-onboard-gimbal-camera}
+case "$MODEL" in
+    quadtailsitter/*|*/quadtailsitter/*) DEFAULT_CAMERA=third-person-camera ;;
+    *) DEFAULT_CAMERA=onboard-gimbal-camera ;;
+esac
+export PX4_VIDEO_CAMERA=${PX4_VIDEO_CAMERA:-$DEFAULT_CAMERA}
 printf '%s\n' "$PX4_VIDEO_HOST_IP" > "$STATE_DIR/video-host"
 
 if [[ -f "$PID_FILE" ]]; then

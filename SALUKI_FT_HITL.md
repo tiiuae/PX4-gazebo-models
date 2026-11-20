@@ -161,9 +161,12 @@ PX4_FT_HITL_MODEL=quadtailsitter/model_hitl.sdf \
 The existing script names and state directory are shared with FT operation.
 This model uses only FC1 (`192.168.202.1:14543`) and host port 14542, with
 `FT_N_SPARE_FCS=0`. The marked default world and network configuration are reused.
-The model currently has no camera, so it does not produce QGC video. The initial
-parameter profile uses airspeedless, pitch-based transitions; flight validation
-remains separate from simulator startup.
+The launcher selects `third-person-camera` for this model and streams it to the
+saved QGC video destination. The sensor is fixed to `base_link`, 3 m behind and
+1.5 m above it, looking at the aircraft. It follows both position and attitude,
+so the horizon rotates with the aircraft during transitions. The camera adds no
+links, joints or mass. The initial parameter profile uses airspeedless,
+pitch-based transitions; flight validation remains separate from startup.
 
 On HITL1, `~/hitl.sh` selects this model. An explicit `PX4_FT_HITL_MODEL` overrides
 that host default, for example `ssrc_holybro_x500/model_hitl.sdf` to return to the
@@ -190,11 +193,11 @@ PX4_VIDEO_HOST_IP=192.168.50.70 ./Tools/simulation/gz/start_ft_hitl.sh
 The address is saved in the state directory's `video-host` file. Without a saved
 address, startup uses the SSH client's address, falling back to `127.0.0.1` for a
 local session. Set an explicit reachable address when using an SSH jump host.
-`PX4_VIDEO_CAMERA` defaults to `onboard-gimbal-camera`, selecting the existing
-gimbal view pitched 45 degrees below horizontal instead of whichever camera
-topic appears first.
-The camera sensor sits 0.2 m ahead of the gimbal origin to clear the central body;
-the pan/tilt joints and their controls remain available. In QGroundControl,
+For X500, `PX4_VIDEO_CAMERA` defaults to `onboard-gimbal-camera`, selecting the
+gimbal view pitched 45 degrees below horizontal. Its sensor sits 0.2 m ahead of
+the gimbal origin to clear the central body; pan/tilt controls remain available.
+For quadtailsitter, the launcher defaults to `third-person-camera`. An explicit
+`PX4_VIDEO_CAMERA` overrides either choice. In QGroundControl,
 select **UDP h.264 Video Stream**, port **5600**, and allow video while disarmed.
 Allow UDP 5600 on the receiving computer. Stop and restart to apply video settings
 or a rebuilt camera plugin. The camera plugin uses pipeline-relative timestamps
