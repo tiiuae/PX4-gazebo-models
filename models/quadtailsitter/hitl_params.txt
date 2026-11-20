@@ -1,0 +1,156 @@
+# Single-FC Saluki HITL: quadtailsitter/model_hitl.sdf, PX4 1.17.
+# Base airframe: 13200, Generic VTOL Tailsitter.
+#
+# Airframes compared in px4-firmware/ROMFS/px4fmu_common:
+# - init.d/airframes/13200_generic_vtol_tailsitter: selected. Hardware VTOL
+#   startup, tailsitter allocator/type; replace two motors/two elevons below.
+# - init.d/airframes/1102_tailsitter_duo_sih.hil: two motors/two elevons and
+#   internal SIH with unrelated dynamics; unsuitable for external Gazebo HITL.
+# - init.d/airframes/{1002_standard_vtol.hil,1404_ssrc_standard_vtol.hil}:
+#   lift-plus-cruise aircraft with five motors and three control surfaces.
+# - init.d-posix/airframes/{4018_gz_quadtailsitter,
+#   1045_gazebo-classic_quadtailsitter}: matching quad geometry/tuning, but
+#   POSIX SITL profiles, not hardware SYS_AUTOSTART choices. Use 4018 as the
+#   tuning reference, with the Saluki PWM mappings below.
+#
+# Preparation (FC1 console, disarmed, HITL only):
+# 1. Export/back up the current parameters. Select a fresh base so saved X500
+#    or standard-VTOL parameters do not override the tailsitter defaults:
+#       param set SYS_AUTOSTART 13200
+#       param set SYS_AUTOCONFIG 1
+#       param save
+#       reboot
+#    This resets most configuration while retaining calibration and selected
+#    RC/history settings. Recheck the network identity; FC1 is 192.168.202.1.
+# 2. After that reboot, apply the param set commands in this file. Finish with:
+#       param save
+#       reboot
+#    Apply the overrides after the base reset, otherwise the reset erases them.
+#    No new airframe or firmware rebuild is needed if 13200 and the VTOL/HITL
+#    modules are already included in the controller firmware.
+#
+# Inherited from 13200: CA_AIRFRAME=4, VT_TYPE=0, EKF2_FUSE_BETA=0,
+# VT_B_TRANS_DUR=5. Inactive elevon parameters are ignored with zero surfaces.
+# Model-specific tuning below comes from 4018; hardware hover/transition
+# validation is still required. The earlier loopback check covered only the
+# model wrapper, sensor transport and motor mapping.
+
+# External HITL and one FC; use the existing Saluki Ethernet startup.
+# Host 192.168.202.254:14542 <-> FC1 192.168.202.1:14543.
+param set SYS_HITL 1
+param set FT_N_SPARE_FCS 0
+param set MAV_COMP_ID 1
+param set UAVCAN_ENABLE 0
+param set SENS_EN_GPSSIM 1
+param set SENS_EN_BAROSIM 1
+param set SENS_EN_MAGSIM 1
+# Saluki defaults to three EKFs/IMUs; this model supplies one simulated IMU.
+# Keep the board's SENS_IMU_MODE=0 for Multi-EKF with one instance.
+param set EKF2_MULTI_IMU 1
+
+# Airspeedless initial profile. The bridge does not subscribe to the model's
+# air_speed sensor. sensor_airspeed_sim synthesizes body-X airspeed, whereas
+# the model's pitot/aerodynamic forward axis is body Z. Do not use that value
+# to gate the transition. With FW_USE_AIRSPD=0, tailsitter.cpp completes the
+# front transition at its pitch threshold; FW controllers use nominal airspeed.
+# Airspeed-gated testing needs a correct airspeed transport/frame integration.
+param set SENS_EN_ARSPDSIM 0
+param set SYS_HAS_NUM_ASPD 0
+param set ASPD_PRIMARY 0
+param set FW_USE_AIRSPD 0
+param set EKF2_ARSP_THR 0
+
+# Bench-HITL settings from rc.hitl_testing: no physical battery/safety switch,
+# with joystick input instead of an RC receiver. Manual-control loss settings
+# stay at the base defaults; the old HITL file's 180 s timeout exceeds the
+# current COM_RC_LOSS_T maximum of 35 s and is not copied.
+param set CBRK_SUPPLY_CHK 894281
+param set COM_PREARM_MODE 0
+param set CBRK_IO_SAFETY 22027
+param set COM_RC_IN_MODE 1
+
+# Quad tailsitter geometry and differential-thrust control, from 4018.
+param set MAV_TYPE 20
+param set CA_ROTOR_COUNT 4
+param set CA_ROTOR0_PX 0.15
+param set CA_ROTOR0_PY 0.23
+param set CA_ROTOR0_KM 0.05
+param set CA_ROTOR1_PX -0.15
+param set CA_ROTOR1_PY -0.23
+param set CA_ROTOR1_KM 0.05
+param set CA_ROTOR2_PX 0.15
+param set CA_ROTOR2_PY -0.23
+param set CA_ROTOR2_KM -0.05
+param set CA_ROTOR3_PX -0.15
+param set CA_ROTOR3_PY 0.23
+param set CA_ROTOR3_KM -0.05
+param set CA_SV_CS_COUNT 0
+param set VT_FW_DIFTHR_EN 7
+param set VT_FW_DIFTHR_S_Y 1
+param set VT_F_TRANS_DUR 1.5
+param set WV_EN 0
+
+# Saluki pwm_esc uses PWM_MAIN in HITL, and the MAVLink stream reads the same
+# functions for its motor-type flag bits. Do not substitute HIL_ACT_FUNC or
+# SIM_GZ_EC_FUNC. Channels 5 onward stay disabled after the fresh base reset.
+# Explicit bounds give (output-disarmed)/(max-disarmed) = normalized [0,1],
+# which the bridge multiplies by the model's maxRotVelocity (1200 rad/s).
+# SITL's SIM_GZ_EC_MIN/MAX=10/1500 are raw speed commands, not hardware PWM
+# bounds; they are deliberately not copied. The effective thrust scaling
+# differs from SITL, so the copied gains are a starting point for validation.
+param set PWM_MAIN_FUNC1 101
+param set PWM_MAIN_FUNC2 102
+param set PWM_MAIN_FUNC3 103
+param set PWM_MAIN_FUNC4 104
+param set PWM_MAIN_DIS1 1000
+param set PWM_MAIN_DIS2 1000
+param set PWM_MAIN_DIS3 1000
+param set PWM_MAIN_DIS4 1000
+param set PWM_MAIN_MIN1 1000
+param set PWM_MAIN_MIN2 1000
+param set PWM_MAIN_MIN3 1000
+param set PWM_MAIN_MIN4 1000
+param set PWM_MAIN_MAX1 2000
+param set PWM_MAIN_MAX2 2000
+param set PWM_MAIN_MAX3 2000
+param set PWM_MAIN_MAX4 2000
+
+# Quad-specific attitude/rate tuning from 4018.
+param set FD_FAIL_R 70
+param set MC_AIRMODE 2
+param set MAN_ARM_GESTURE 0
+param set MC_ROLL_P 3
+param set MC_PITCH_P 3
+param set MC_ROLLRATE_P 0.3
+param set MC_PITCHRATE_P 0.3
+param set FW_P_TC 0.6
+param set FW_PR_P 0.5
+param set FW_PR_I 0.3
+param set FW_PSP_OFF 2
+param set FW_RR_FF 0.1
+param set FW_RR_P 0.2
+param set FW_YR_FF 0
+param set FW_YR_I 0
+
+# Nominal fixed-wing performance from 4018, also used without an airspeed
+# sensor. VT_ARSP_TRANS=15 from SITL is unused in this airspeedless profile.
+# FW_RR_I=0.1 is already the firmware default and is not overridden.
+param set FW_THR_TRIM 0.35
+param set FW_THR_MAX 0.8
+param set FW_THR_MIN 0.05
+param set FW_T_CLMB_MAX 6
+param set FW_T_HRATE_FF 0.5
+param set FW_T_SINK_MAX 3
+param set FW_T_SINK_MIN 1.6
+param set FW_AIRSPD_STALL 10
+param set FW_AIRSPD_MIN 14
+param set FW_AIRSPD_TRIM 18
+param set FW_AIRSPD_MAX 22
+
+# After saving/rebooting, verify on FC1:
+# - SYS_AUTOSTART=13200, SYS_HITL=1, FT_N_SPARE_FCS=0, MAV_COMP_ID=1.
+# - CA_AIRFRAME=4, VT_TYPE=0, four rotors and zero control surfaces.
+# - pwm_esc status: HITL; PWM_MAIN channels 1-4 Motor 1-4, others disabled.
+# - HIL_ACTUATOR_CONTROLS: first four channels normalized, motor flags 0x0f.
+# - IMU/GPS/barometer/magnetometer updates, estimator health, then hover and
+#   transitions. No controller parameters have been applied by adding this file.
