@@ -187,7 +187,7 @@ def validate_options(options):
         elif option not in allowed and not any(
                 option.startswith(key + '=') for key in value_options if key.startswith('--')):
             raise RuntimeError('Unsupported Gazebo option ' + option +
-                               '; launcher owns the default world. See SALUKI_FT_HITL.md')
+                               '; launcher owns the default world. See SALUKI_HITL.md')
         index += 1
 
 

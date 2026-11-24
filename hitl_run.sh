@@ -1,7 +1,7 @@
 #!/bin/bash
 set -eo pipefail
 
-# Run from any directory. Full procedure: SALUKI_FT_HITL.md beside this script.
+# Run from any directory. Full procedure: SALUKI_HITL.md beside this script.
 # ./Tools/simulation/gz/hitl_run.sh ssrc_holybro_x500/model_ft_hitl.sdf --headless
 SCRIPT_DIR=$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd)
 WORKSPACE=$(cd -- "$SCRIPT_DIR/../../.." && pwd)

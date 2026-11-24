@@ -1,4 +1,4 @@
-# Saluki FT HITL with Gazebo Harmonic
+# Saluki HITL with Gazebo Harmonic
 
 This guide covers PX4 1.17, Gazebo Harmonic (Sim 8), Ubuntu 24.04 AMD64,
 and the SSRC Holybro X500 with two Saluki FT flight controllers. Run commands
