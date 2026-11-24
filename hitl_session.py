@@ -138,8 +138,10 @@ def wait_ready(process, env, timeout=30):
 
 def create_model(model, name, env):
     # JSON string escaping is also valid for protobuf text string fields.
-    request = ('sdf_filename: ' + json.dumps(str(model)) + ', name: ' + json.dumps(name) +
-               ' pose: {position: {x: 1.01, y: 0.98, z: 0.83}}')
+    request = 'sdf_filename: ' + json.dumps(str(model)) + ', name: ' + json.dumps(name)
+    # Let Gazebo use an explicit model pose; otherwise keep the X500 spawn default.
+    if ET.parse(model).getroot().find('model/pose') is None:
+        request += ' pose: {position: {x: 1.01, y: 0.98, z: 0.83}}'
     result = subprocess.run(['gz', 'service', '-s', CREATE_SERVICE,
                              '--reqtype', 'gz.msgs.EntityFactory',
                              '--reptype', 'gz.msgs.Boolean', '--timeout', '5000',

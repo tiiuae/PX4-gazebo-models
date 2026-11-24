@@ -1,6 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <sdf version='1.10'>
   <model name='quadtailsitter_hitl'>
+    <!-- The lowest collision is 0.2 m above the model origin: leave 1 cm clearance. -->
+    <pose>1.01 0.98 -0.19 0 0 0</pose>
     <include merge='true'>
       <uri>model://quadtailsitter</uri>
     </include>

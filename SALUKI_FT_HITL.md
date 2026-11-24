@@ -161,12 +161,23 @@ PX4_FT_HITL_MODEL=quadtailsitter/model_hitl.sdf \
 The existing script names and state directory are shared with FT operation.
 This model uses only FC1 (`192.168.202.1:14543`) and host port 14542, with
 `FT_N_SPARE_FCS=0`. The marked default world and network configuration are reused.
+Its HITL wrapper sets the starting pose to `(1.01, 0.98, -0.19)` with zero roll,
+pitch and yaw, upright on the home pad. The model origin is below its lowest
+collision surface; this height leaves 1 cm ground clearance and avoids tipping
+over after a drop from the generic X500 spawn height. The launcher honors an
+explicit SDF model pose and retains its existing default for models without one.
 The launcher selects `third-person-camera` for this model and streams it to the
 saved QGC video destination. The sensor is fixed to `base_link`, 3 m behind and
 1.5 m above it, looking at the aircraft. It follows both position and attitude,
 so the horizon rotates with the aircraft during transitions. The camera adds no
 links, joints or mass. The initial parameter profile uses airspeedless,
 pitch-based transitions; flight validation remains separate from startup.
+
+The tailsitter profile sets `FD_ESC_TOUT=1000` ms for simulated ESC arming
+feedback. With the 300 ms default, HITL1 recorded an ESC arming failure followed
+by a failsafe disarm about 0.5 s after arming. On 2026-11-24, the operator
+confirmed that increasing this timeout to 1000 ms resolved the immediate motor
+stop. ESC arming checks remain enabled (`FD_ESCS_EN=1`).
 
 On HITL1, `~/hitl.sh` selects this model. An explicit `PX4_FT_HITL_MODEL` overrides
 that host default, for example `ssrc_holybro_x500/model_hitl.sdf` to return to the

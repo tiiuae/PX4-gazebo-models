@@ -68,6 +68,9 @@ param set CBRK_SUPPLY_CHK 894281
 param set COM_PREARM_MODE 0
 param set CBRK_IO_SAFETY 22027
 param set COM_RC_IN_MODE 1
+# Allow simulated rotor RPM / ESC-armed feedback to arrive during spool-up.
+# The 300 ms default caused an ESC arming failure and immediate disarm on HITL1.
+param set FD_ESC_TOUT 1000
 
 # Quad tailsitter geometry and differential-thrust control, from 4018.
 param set MAV_TYPE 20
