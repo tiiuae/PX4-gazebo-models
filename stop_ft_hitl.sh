@@ -1,5 +1,5 @@
 #!/bin/bash
-# Stop only the FT launcher recorded by start_ft_hitl.sh; it cleans up Gazebo.
+# Stop only the HITL launcher recorded by start_ft_hitl.sh; it cleans up Gazebo.
 set -euo pipefail
 
 if [[ $# -gt 0 ]]; then
@@ -10,13 +10,13 @@ fi
 STATE_DIR=${PX4_FT_HITL_STATE_DIR:-${XDG_STATE_HOME:-$HOME/.local/state}/px4-ft-hitl}
 PID_FILE="$STATE_DIR/launcher.pid"
 if [[ ! -d "$STATE_DIR" ]]; then
-    echo "Managed FT Gazebo is not running."
+    echo "Managed HITL Gazebo is not running."
     exit 0
 fi
 exec 9>"$STATE_DIR/control.lock"
 flock -w 90 9
 if [[ ! -f "$PID_FILE" ]]; then
-    echo "Managed FT Gazebo is not running."
+    echo "Managed HITL Gazebo is not running."
     exit 0
 fi
 read -r PID START_TIME < "$PID_FILE" || { echo "Invalid PID record: $PID_FILE" >&2; exit 1; }
@@ -32,17 +32,17 @@ process_alive() {
 }
 if ! process_alive; then
     rm -- "$PID_FILE"
-    echo "Managed FT Gazebo is not running; removed stale PID record."
+    echo "Managed HITL Gazebo is not running; removed stale PID record."
     exit 0
 fi
 kill -TERM "$PID"
 for ((attempt=0; attempt<100; attempt++)); do
     if ! process_alive; then
         rm -- "$PID_FILE"
-        echo "FT Gazebo stopped. Log: $STATE_DIR/latest.log"
+        echo "HITL Gazebo stopped. Log: $STATE_DIR/latest.log"
         exit 0
     fi
     sleep 0.1
 done
-echo "FT launcher did not stop within 10 seconds. PID record retained: $PID_FILE" >&2
+echo "HITL launcher did not stop within 10 seconds. PID record retained: $PID_FILE" >&2
 exit 1

@@ -1,4 +1,4 @@
-# Saluki FT HITL with Gazebo Harmonic
+# Saluki HITL with Gazebo Harmonic
 
 This guide covers PX4 1.17, Gazebo Harmonic (Sim 8), Ubuntu 24.04 AMD64,
 and the SSRC Holybro X500 with two Saluki FT flight controllers. Run commands
@@ -146,6 +146,45 @@ ports 14542/14562 before launching. Model arguments may be absolute paths or
 relative to `PX4_GZ_MODELS`; `PX4_FT_HITL_MODEL` overrides the background launcher's
 model. Neither option changes controller configuration.
 
+## Single-FC quad tailsitter
+
+Prepare FC1 using [airframe 13200 and the tailsitter overrides](models/quadtailsitter/hitl_params.txt)
+before connecting the simulator to hardware. This is a four-motor tailsitter,
+not the X500 airframe. Stop the current managed instance before changing models:
+
+```bash
+./Tools/simulation/gz/stop_ft_hitl.sh
+PX4_FT_HITL_MODEL=quadtailsitter/model_hitl.sdf \
+  ./Tools/simulation/gz/start_ft_hitl.sh
+```
+
+The existing script names and state directory are shared with FT operation.
+This model uses only FC1 (`192.168.202.1:14543`) and host port 14542, with
+`FT_N_SPARE_FCS=0`. The marked default world and network configuration are reused.
+Its HITL wrapper sets the starting pose to `(1.01, 0.98, -0.19)` with zero roll,
+pitch and yaw, upright on the home pad. The model origin is below its lowest
+collision surface; this height leaves 1 cm ground clearance and avoids tipping
+over after a drop from the generic X500 spawn height. The launcher honors an
+explicit SDF model pose and retains its existing default for models without one.
+The launcher selects `third-person-camera` for this model and streams it to the
+saved QGC video destination. The sensor is fixed to `base_link`, 3 m behind and
+1.5 m above it, looking at the aircraft. It follows both position and attitude,
+so the horizon rotates with the aircraft during transitions. The camera adds no
+links, joints or mass. The initial parameter profile uses airspeedless,
+pitch-based transitions; flight validation remains separate from startup.
+
+The tailsitter profile sets `FD_ESC_TOUT=1000` ms for simulated ESC arming
+feedback. With the 300 ms default, HITL1 recorded an ESC arming failure followed
+by a failsafe disarm about 0.5 s after arming. On 2026-11-24, the operator
+confirmed that increasing this timeout to 1000 ms resolved the immediate motor
+stop. ESC arming checks remain enabled (`FD_ESCS_EN=1`).
+
+On HITL1, `~/hitl.sh` selects this model. An explicit `PX4_FT_HITL_MODEL` overrides
+that host default, for example `ssrc_holybro_x500/model_hitl.sdf` to return to the
+single-FC X500 after stopping the previous session. Stop with
+`~/saluki-hitl/stop-ft-gazebo.sh`. Neither launcher applies the parameter file or
+arms the controller.
+
 ## Visual flight references
 
 The default world has ground lines at 10 m spacing, four coloured landmarks,
@@ -165,11 +204,11 @@ PX4_VIDEO_HOST_IP=192.168.50.70 ./Tools/simulation/gz/start_ft_hitl.sh
 The address is saved in the state directory's `video-host` file. Without a saved
 address, startup uses the SSH client's address, falling back to `127.0.0.1` for a
 local session. Set an explicit reachable address when using an SSH jump host.
-`PX4_VIDEO_CAMERA` defaults to `onboard-gimbal-camera`, selecting the existing
-gimbal view pitched 45 degrees below horizontal instead of whichever camera
-topic appears first.
-The camera sensor sits 0.2 m ahead of the gimbal origin to clear the central body;
-the pan/tilt joints and their controls remain available. In QGroundControl,
+For X500, `PX4_VIDEO_CAMERA` defaults to `onboard-gimbal-camera`, selecting the
+gimbal view pitched 45 degrees below horizontal. Its sensor sits 0.2 m ahead of
+the gimbal origin to clear the central body; pan/tilt controls remain available.
+For quadtailsitter, the launcher defaults to `third-person-camera`. An explicit
+`PX4_VIDEO_CAMERA` overrides either choice. In QGroundControl,
 select **UDP h.264 Video Stream**, port **5600**, and allow video while disarmed.
 Allow UDP 5600 on the receiving computer. Stop and restart to apply video settings
 or a rebuilt camera plugin. The camera plugin uses pipeline-relative timestamps
